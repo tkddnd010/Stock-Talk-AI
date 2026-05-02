@@ -1,0 +1,24 @@
+version: '3.8'
+
+services:
+  # 데이터베이스: 주가, 뉴스, AI 토론 결과 저장 (PostgreSQL)
+  db:
+    image: postgres:15
+    container_name: stock-db
+    restart: always
+    environment:
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: stock_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - ./postgres_data:/var/lib/postgresql/data
+
+  # 메시지 큐/캐시: AI 호출 비동기 처리 및 수집 스케줄링 (Redis)
+  redis:
+    image: redis:7-alpine
+    container_name: stock-redis
+    restart: always
+    ports:
+      - "6379:6379"
