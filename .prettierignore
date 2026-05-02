@@ -1,0 +1,4 @@
+# Prettier has no parser for these — excluding avoids IDE/CI errors
+.gitignore
+.env
+.env.*
