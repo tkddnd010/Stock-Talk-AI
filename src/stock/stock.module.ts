@@ -1,17 +1,15 @@
 import { Module } from '@nestjs/common';
 import { StockService } from './stock.service';
 import { Cron, CronExpression, ScheduleModule } from '@nestjs/schedule';
+import { StockPrice } from './entities/stock-price.entity';
+import { TypeOrmModule } from '@nestjs/typeorm';
 
 @Module({
-    imports: [ScheduleModule.forRoot()],
+    imports: [
+        ScheduleModule.forRoot(),
+        TypeOrmModule.forFeature([StockPrice]),
+    ],
     providers: [StockService],
+    exports: [StockService],
 })
-export class StockModule {
-    constructor(private stockService: StockService){}
-
-    // 10분 주기로 실행
-    @Cron(CronExpression.EVERY_10_MINUTES)
-    handleStockCron(){
-        this.stockService.fetchStockPrice();
-    }
-}
+export class StockModule {}
