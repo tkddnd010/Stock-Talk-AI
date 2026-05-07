@@ -8,7 +8,10 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { NotificationModule } from './notification/notification.module';
 
 @Module({
-    imports: [StockModule, AnalysisModule, NotificationModule,
+    imports: [
+        StockModule,
+        AnalysisModule,
+        NotificationModule,
         ConfigModule.forRoot({isGlobal: true,}),
         TypeOrmModule.forRootAsync({
             imports: [ConfigModule],
@@ -22,7 +25,7 @@ import { NotificationModule } from './notification/notification.module';
                 database: configService.get<string>('DB_DATABASE'),
                 autoLoadEntities: true, // 엔티티 자동 로드
                 synchronize: true, // 데이터베이스 동기화(개발 환경에서만 사용)
-                dropSchema: true, // 서버가 재시작될 때마다 기존 테이블을 삭제하고 새로 만듭니다.
+                dropSchema: false, // 서버가 재시작될 때마다 기존 테이블을 삭제하고 새로 만듭니다.
             }),
 
         }),
