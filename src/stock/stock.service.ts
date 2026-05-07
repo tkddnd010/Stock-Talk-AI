@@ -23,7 +23,7 @@ export class StockService implements OnModuleInit {
         this.symbols = this.configService.get<string>('MONITORING_STOCKS')!.split(',');
       }
       async onModuleInit() {
-        this.logger.log('🚀 주식 모니터링 서비스가 성공적으로 초기화되었습니다.');
+        this.logger.log('주식 모니터링 서비스가 성공적으로 초기화되었습니다.');
       }
 
       // 10분 주기로 실행
