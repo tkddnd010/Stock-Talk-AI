@@ -14,7 +14,7 @@
 * **Framework:** NestJS (구조적 설계 및 유지보수성 고려)
 * **Database:** PostgreSQL (정밀한 소수점 처리와 AI 분석을 위한 복잡한 쿼리 성능을 고려)
 * **Infrastructure:** Redis / BullMQ (AI 연산의 비동기 처리 및 시스템 안정성 확보)
-* **AI:** OpenAI GPT-4o mini (응답 속도 및 비용 효율성 최적화)
+* **AI:** OpenAI GPT-5 mini (응답 속도 및 비용 효율성 최적화)
 
 ## 4. 데이터 목표
 * **데이터셋 규모:** 1000건 이상 목표
