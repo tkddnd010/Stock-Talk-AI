@@ -1,0 +1,32 @@
+import { Injectable, Logger } from "@nestjs/common";
+import { ConfigService } from "@nestjs/config";
+import OpenAI from "openai";
+
+@Injectable()
+export class AiService {
+    private readonly logger = new Logger(AiService.name);
+    private readonly openai: OpenAI;
+
+    constructor(private readonly configService: ConfigService){
+        this.openai = new OpenAI({
+            apiKey: this.configService.get<string>('OPENAI_API_KEY')!,
+            baseURL: this.configService.get<string>('OPENAI_BASE_URL')!,
+        });
+    }
+
+    async getAnalysis(personaPrompt: string, symbol: string, changePercent: number,currentPrice: number):Promise<string> {
+        try{
+            const response = await this.openai.chat.completions.create({
+                model: 'gpt-5-mini',
+                messages: [
+                    {role: 'system', content: personaPrompt},
+                    {role: 'user', content: `종목: ${symbol}, 가격: ${currentPrice}, 변동률: ${changePercent}%`}
+                ],
+            });
+            return response.choices[0].message.content || '분석 실패';
+        } catch(error){
+            this.logger.error(`AI 에러: ${error.message}`);
+            throw error;
+        }
+    }
+}

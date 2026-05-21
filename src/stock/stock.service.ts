@@ -6,16 +6,19 @@ import { StockPrice } from './entities/stock-price.entity';
 import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import YahooFinance from 'yahoo-finance2';
+import { InvestorType } from '../analysis/enums/investor-type.enum';
+import { PERSONA_PROMPTS } from '../analysis/constants/persona-prompt.constant';
+import { AnalysisService } from 'src/analysis/analysis.service';
 
 @Injectable()
 export class StockService implements OnModuleInit {
     private readonly logger = new Logger(StockService.name);
     private readonly symbols: string[];
-
-    private readonly yahooFinance = new YahooFinance();
+    private readonly yahooFinance = new YahooFinance({suppressNotices: ['yahooSurvey']});
 
     constructor(
       private configService: ConfigService,
+      private analysisService: AnalysisService,
       @InjectRepository(StockPrice)
       private stockPriceRepository: Repository<StockPrice>,
     ) {
@@ -23,7 +26,7 @@ export class StockService implements OnModuleInit {
         this.symbols = this.configService.get<string>('MONITORING_STOCKS')!.split(',');
       }
       async onModuleInit() {
-        this.logger.log('주식 모니터링 서비스가 성공적으로 초기화되었습니다.');
+        this.logger.log('주식 모니터링 서비스가 시작됩니다.');
       }
 
       // 10분 주기로 실행
@@ -36,7 +39,7 @@ export class StockService implements OnModuleInit {
       async fetchStockPrice(){
         for(const symbol of this.symbols){
           try{
-            // 주가를 가져오는 로직 들어갈 자리(현재 임시 테스트를 위한 코드)
+            // 주가를 가져오는 로직
             const quote = await this.yahooFinance.quote(symbol);
             const currentPrice = (quote as any).regularMarketPrice;
 
@@ -59,7 +62,10 @@ export class StockService implements OnModuleInit {
 
               // 변동률이 4프로 이상이면 AI 토론 자율 생성 로직 들어갈 자리
               if(Math.abs(changePercent) >= 4){
-                this.logger.warn(`${symbol} ${(Math.abs(changePercent)).toFixed(2)}% 변동 감지`);
+                this.logger.warn(`변동 감지: ${logMsg}`);
+
+                  this.analysisService.runMultiAgentDebate(symbol, currentPrice, changePercent);
+
               }else{
                 this.logger.log(logMsg);
               }
