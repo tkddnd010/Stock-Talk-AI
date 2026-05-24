@@ -14,13 +14,17 @@ export class AiService {
         });
     }
 
-    async getAnalysis(personaPrompt: string, symbol: string, changePercent: number,currentPrice: number):Promise<string> {
+    async getAnalysis(personaPrompt: string, symbol: string, changePercent: number,currentPrice: number, customPrompt?: string):Promise<string> {
         try{
+            const userMessageContent = customPrompt
+                ? customPrompt
+                : `종목: ${symbol}, 가격: ${currentPrice}, 변동률: ${changePercent}%`;
+            
             const response = await this.openai.chat.completions.create({
                 model: 'gpt-5-mini',
                 messages: [
                     {role: 'system', content: personaPrompt},
-                    {role: 'user', content: `종목: ${symbol}, 가격: ${currentPrice}, 변동률: ${changePercent}%`}
+                    {role: 'user', content: userMessageContent}
                 ],
             });
             return response.choices[0].message.content || '분석 실패';
