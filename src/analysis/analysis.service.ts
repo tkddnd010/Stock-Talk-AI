@@ -93,4 +93,12 @@ export class AnalysisService {
             this.logger.error(`[종합 토론 실패]: ${error.message}`);
         }
     }
+
+    async getReportsBySymbol(symbol: string){
+        return this.analysisRepository.find({
+            where: {symbol},
+            order: {createdAt: 'DESC'},
+        });
+    }
+
 }

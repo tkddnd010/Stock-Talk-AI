@@ -6,12 +6,16 @@ import { StockModule } from './stock/stock.module';
 import { AnalysisModule } from './analysis/analysis.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { NotificationModule } from './notification/notification.module';
+import { UsersModule } from './users/users.module';
+import { AuthModule } from './auth/auth.module';
 
 @Module({
     imports: [
         StockModule,
         AnalysisModule,
         NotificationModule,
+        UsersModule,
+        AuthModule,
         ConfigModule.forRoot({isGlobal: true,}),
         TypeOrmModule.forRootAsync({
             imports: [ConfigModule],
