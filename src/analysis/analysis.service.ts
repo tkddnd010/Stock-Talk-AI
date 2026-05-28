@@ -5,6 +5,7 @@ import { PERSONA_PROMPTS } from './constants/persona-prompt.constant';
 import { InjectRepository } from '@nestjs/typeorm';
 import { AnalysisReport } from './entities/analysis-report.entity';
 import { Repository } from 'typeorm';
+import { NotificationService } from 'src/notification/notification.service';
 
 @Injectable()
 export class AnalysisService {
@@ -12,6 +13,7 @@ export class AnalysisService {
 
     constructor(
         private readonly aiService: AiService,
+        private readonly notificationService: NotificationService,
         @InjectRepository(AnalysisReport)
         private readonly analysisRepository: Repository<AnalysisReport>,
     ){}
@@ -87,6 +89,8 @@ export class AnalysisService {
                 author: 'DEBATE_MODERATOR_BOT',
                 type: 'DEBATE',
             });
+
+            this.notificationService.startLiveBroadcast(symbol, debateResult);
 
             this.logger.log(`[종합 토론] 대본 저장 완료`);
         } catch(error){

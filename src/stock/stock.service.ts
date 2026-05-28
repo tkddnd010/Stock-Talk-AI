@@ -30,7 +30,7 @@ export class StockService implements OnModuleInit {
       }
 
       // 10분 주기로 실행
-    @Cron(CronExpression.EVERY_10_MINUTES)
+    @Cron(CronExpression.EVERY_30_SECONDS)
     async handleStockCron(){
         await this.fetchStockPrice();
     }
@@ -56,7 +56,8 @@ export class StockService implements OnModuleInit {
 
             if(lastRecord){
               const lastPrice = Number(lastRecord.price);
-              const changePercent = ((currentPrice-lastPrice) / lastPrice) * 100;
+              // const changePercent = ((currentPrice-lastPrice) / lastPrice) * 100;
+              const changePercent = 5;
 
               const logMsg = `[${symbol}] 현재: $${currentPrice.toFixed(2)} (${changePercent.toFixed(2)}%)`;
 

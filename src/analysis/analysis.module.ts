@@ -4,9 +4,11 @@ import { AiService } from './ai.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AnalysisReport } from './entities/analysis-report.entity';
 import { AnalysisController } from './analysis.controller';
+import { NotificationModule } from 'src/notification/notification.module';
+import { NotificationService } from 'src/notification/notification.service';
 
 @Module({
-    imports: [TypeOrmModule.forFeature([AnalysisReport])],
+    imports: [TypeOrmModule.forFeature([AnalysisReport]),NotificationModule],
     controllers: [AnalysisController],
     providers: [AnalysisService, AiService],
     exports: [AnalysisService],
