@@ -1,4 +1,9 @@
-import { Column, CreateDateColumn, Entity, PrimaryGeneratedColumn } from "typeorm";
+import {
+    Column,
+    CreateDateColumn,
+    Entity,
+    PrimaryGeneratedColumn,
+} from 'typeorm';
 
 @Entity('analysis_reports')
 export class AnalysisReport {
@@ -8,16 +13,16 @@ export class AnalysisReport {
     @Column()
     symbol: string; // 분석 종목
 
-    @Column({ type: 'decimal', precision: 10, scale: 2})
+    @Column({ type: 'decimal', precision: 10, scale: 2 })
     price: number; // 분석 당시 주가
 
-    @Column({ type: 'decimal', precision: 5, scale: 2})
+    @Column({ type: 'decimal', precision: 5, scale: 2 })
     changePercent: number; // 분석 당시 변동률
 
     @Column()
     title: string; // 게시글 제목
 
-    @Column({ type: 'text'})
+    @Column({ type: 'text' })
     content: string; // 게시글 본문(AI가 생성한 리포트)
 
     @Column()

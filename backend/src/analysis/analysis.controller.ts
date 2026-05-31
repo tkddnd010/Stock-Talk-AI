@@ -1,11 +1,6 @@
-import { Controller, Get, Param } from "@nestjs/common";
-import {
-    ApiOperation,
-    ApiParam,
-    ApiResponse,
-    ApiTags,
-} from "@nestjs/swagger";
-import { AnalysisService } from "./analysis.service";
+import { Controller, Get, Param } from '@nestjs/common';
+import { ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { AnalysisService } from './analysis.service';
 
 @ApiTags('분석 리포트')
 @Controller('api/reports')
@@ -35,7 +30,8 @@ export class AnalysisController {
                 properties: {
                     speaker: {
                         type: 'string',
-                        description: '발화자 이름(예: 가치투자자, 기술적분석가, 사회자)',
+                        description:
+                            '발화자 이름(예: 가치투자자, 기술적분석가, 사회자)',
                         example: '가치투자자',
                     },
                     role: {
@@ -47,7 +43,8 @@ export class AnalysisController {
                     message: {
                         type: 'string',
                         description: '해당 화자의 대사 본문',
-                        example: '현재 밸류에이션은 여전히 합리적인 수준입니다.',
+                        example:
+                            '현재 밸류에이션은 여전히 합리적인 수준입니다.',
                     },
                 },
                 required: ['speaker', 'role', 'message'],
@@ -67,7 +64,9 @@ export class AnalysisController {
         },
     })
     async getDebateHistory(@Param('symbol') symbol: string) {
-        return this.analysisService.getLatestDebateHistory(symbol.toUpperCase());
+        return this.analysisService.getLatestDebateHistory(
+            symbol.toUpperCase(),
+        );
     }
 
     @Get(':symbol')
@@ -91,9 +90,21 @@ export class AnalysisController {
             items: {
                 type: 'object',
                 properties: {
-                    id: { type: 'number', description: '리포트 고유 ID', example: 1 },
-                    symbol: { type: 'string', description: '분석 대상 종목 티커', example: 'TSLA' },
-                    price: { type: 'number', description: '분석 당시 주가', example: 245.5 },
+                    id: {
+                        type: 'number',
+                        description: '리포트 고유 ID',
+                        example: 1,
+                    },
+                    symbol: {
+                        type: 'string',
+                        description: '분석 대상 종목 티커',
+                        example: 'TSLA',
+                    },
+                    price: {
+                        type: 'number',
+                        description: '분석 당시 주가',
+                        example: 245.5,
+                    },
                     changePercent: {
                         type: 'number',
                         description: '분석 당시 주가 변동률(%)',
@@ -106,17 +117,20 @@ export class AnalysisController {
                     },
                     content: {
                         type: 'string',
-                        description: 'AI가 생성한 리포트 본문(개별 분석 또는 토론 전문)',
+                        description:
+                            'AI가 생성한 리포트 본문(개별 분석 또는 토론 전문)',
                     },
                     author: {
                         type: 'string',
-                        description: '작성 주체(예: VALUE_BOT, DEBATE_MODERATOR_BOT)',
+                        description:
+                            '작성 주체(예: VALUE_BOT, DEBATE_MODERATOR_BOT)',
                         example: 'VALUE_BOT',
                     },
                     type: {
                         type: 'string',
                         enum: ['INDIVIDUAL', 'DEBATE'],
-                        description: 'INDIVIDUAL: 성향별 개별 분석, DEBATE: 종합 토론',
+                        description:
+                            'INDIVIDUAL: 성향별 개별 분석, DEBATE: 종합 토론',
                     },
                     createdAt: {
                         type: 'string',

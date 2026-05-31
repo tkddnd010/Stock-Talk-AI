@@ -8,80 +8,90 @@ import { InjectRepository } from '@nestjs/typeorm';
 import YahooFinance from 'yahoo-finance2';
 import { InvestorType } from '../analysis/enums/investor-type.enum';
 import { PERSONA_PROMPTS } from '../analysis/constants/persona-prompt.constant';
-import { AnalysisService } from 'src/analysis/analysis.service';
+import { AnalysisService } from '../analysis/analysis.service';
 
 @Injectable()
 export class StockService implements OnModuleInit {
     private readonly logger = new Logger(StockService.name);
     private readonly symbols: string[];
-    private readonly yahooFinance = new YahooFinance({suppressNotices: ['yahooSurvey']});
+    private readonly yahooFinance = new YahooFinance({
+        suppressNotices: ['yahooSurvey'],
+    });
 
     constructor(
-      private configService: ConfigService,
-      private analysisService: AnalysisService,
-      @InjectRepository(StockPrice)
-      private stockPriceRepository: Repository<StockPrice>,
+        private configService: ConfigService,
+        private analysisService: AnalysisService,
+        @InjectRepository(StockPrice)
+        private stockPriceRepository: Repository<StockPrice>,
     ) {
         // .env에서 종목 리스트를 가져와 배열로 변환합니다.
-        this.symbols = this.configService.get<string>('MONITORING_STOCKS')!.split(',');
-      }
-      async onModuleInit() {
+        this.symbols = this.configService
+            .get<string>('MONITORING_STOCKS')!
+            .split(',');
+    }
+    async onModuleInit() {
         this.logger.log('주식 모니터링 서비스가 시작됩니다.');
-      }
+    }
 
-      // 10분 주기로 실행
+    // 10분 주기로 실행
     @Cron(CronExpression.EVERY_30_SECONDS)
-    async handleStockCron(){
+    async handleStockCron() {
         await this.fetchStockPrice();
     }
 
-      // 실제 주가를 가져오는 핵심 함수
-      async fetchStockPrice(){
-        for(const symbol of this.symbols){
-          try{
-            // 주가를 가져오는 로직
-            const quote = await this.yahooFinance.quote(symbol);
-            const currentPrice = (quote as any).regularMarketPrice;
+    // 실제 주가를 가져오는 핵심 함수
+    async fetchStockPrice() {
+        for (const symbol of this.symbols) {
+            try {
+                // 주가를 가져오는 로직
+                const quote = await this.yahooFinance.quote(symbol);
+                const currentPrice = (quote as any).regularMarketPrice;
 
-            if (!currentPrice) {
-              this.logger.warn(`${symbol} 가격을 가져오지 못했습니다.`);
-              continue; // 여기 continue 부분 고민해 볼것
+                if (!currentPrice) {
+                    this.logger.warn(`${symbol} 가격을 가져오지 못했습니다.`);
+                    continue; // 여기 continue 부분 고민해 볼것
+                }
+
+                // 주가 변동률 계산하는 로직
+                const lastRecord = await this.stockPriceRepository.findOne({
+                    where: { symbol },
+                    order: { createdAt: 'DESC' },
+                });
+
+                if (lastRecord) {
+                    const lastPrice = Number(lastRecord.price);
+                    // const changePercent = ((currentPrice-lastPrice) / lastPrice) * 100;
+                    const changePercent = 5;
+
+                    const logMsg = `[${symbol}] 현재: $${currentPrice.toFixed(2)} (${changePercent.toFixed(2)}%)`;
+
+                    // 변동률이 4프로 이상이면 AI 토론 자율 생성 로직 들어갈 자리
+                    if (Math.abs(changePercent) >= 4) {
+                        this.logger.warn(`변동 감지: ${logMsg}`);
+
+                        this.analysisService.runMultiAgentDebate(
+                            symbol,
+                            currentPrice,
+                            changePercent,
+                        );
+                    } else {
+                        this.logger.log(logMsg);
+                    }
+                }
+
+                // 여기에 디비에 저장하는 로직
+                const newPrice = this.stockPriceRepository.create({
+                    symbol,
+                    price: currentPrice,
+                });
+
+                await this.stockPriceRepository.save(newPrice);
+            } catch (error) {
+                this.logger.error(
+                    `${symbol} 데이터 수집 중 오류 발생:`,
+                    error.message,
+                );
             }
-
-            // 주가 변동률 계산하는 로직
-            const lastRecord = await this.stockPriceRepository.findOne({
-              where: {symbol},
-              order: {createdAt: 'DESC'},
-            })
-
-            if(lastRecord){
-              const lastPrice = Number(lastRecord.price);
-              // const changePercent = ((currentPrice-lastPrice) / lastPrice) * 100;
-              const changePercent = 5;
-
-              const logMsg = `[${symbol}] 현재: $${currentPrice.toFixed(2)} (${changePercent.toFixed(2)}%)`;
-
-              // 변동률이 4프로 이상이면 AI 토론 자율 생성 로직 들어갈 자리
-              if(Math.abs(changePercent) >= 4){
-                this.logger.warn(`변동 감지: ${logMsg}`);
-
-                  this.analysisService.runMultiAgentDebate(symbol, currentPrice, changePercent);
-
-              }else{
-                this.logger.log(logMsg);
-              }
-            }
-
-            // 여기에 디비에 저장하는 로직
-            const newPrice = this.stockPriceRepository.create({
-              symbol,
-              price: currentPrice,
-            });
-
-            await this.stockPriceRepository.save(newPrice);
-          }catch(error){
-            this.logger.error(`${symbol} 데이터 수집 중 오류 발생:`,error.message);
-          }
         }
-      }
+    }
 }

@@ -19,3 +19,31 @@
 ## 4. 데이터 목표
 * **데이터셋 규모:** 1000건 이상 목표
 * **분석 대상:** 해외 주식
+
+## 5. 프로젝트 구조
+
+```
+Stock-Talk-AI/
+├── backend/          # NestJS API 서버
+├── docker-compose.yml
+└── postgres_data/
+```
+
+## 6. 백엔드 실행
+
+```bash
+cd backend
+cp .env   # 최초 1회: 환경 변수 설정
+npm install
+npm run start:dev
+```
+
+루트에서 실행하려면:
+
+```bash
+npm install --prefix backend
+npm run backend:start:dev
+```
+
+- API: `http://localhost:3000`
+- Swagger: `http://localhost:3000/api-docs`

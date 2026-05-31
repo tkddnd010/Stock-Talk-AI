@@ -16,12 +16,12 @@ export class UsersService {
     }
 
     async findById(id: string): Promise<Omit<User, 'password'> | null> {
-        const user = await this.userRepository.findOne({ where: { id }});
+        const user = await this.userRepository.findOne({ where: { id } });
 
-        if(!user) return null;
+        if (!user) return null;
 
         const { password, ...userInfo } = user;
-         
+
         return userInfo;
     }
 

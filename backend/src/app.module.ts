@@ -16,7 +16,7 @@ import { AuthModule } from './auth/auth.module';
         NotificationModule,
         UsersModule,
         AuthModule,
-        ConfigModule.forRoot({isGlobal: true,}),
+        ConfigModule.forRoot({ isGlobal: true }),
         TypeOrmModule.forRootAsync({
             imports: [ConfigModule],
             inject: [ConfigService],
@@ -31,7 +31,6 @@ import { AuthModule } from './auth/auth.module';
                 synchronize: true, // 데이터베이스 동기화(개발 환경에서만 사용)
                 dropSchema: true, // 서버가 재시작될 때마다 기존 테이블을 삭제하고 새로 만듭니다.
             }),
-
         }),
     ],
     controllers: [AppController],
