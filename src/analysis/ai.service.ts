@@ -6,12 +6,15 @@ import OpenAI from "openai";
 export class AiService {
     private readonly logger = new Logger(AiService.name);
     private readonly openai: OpenAI;
+    private readonly model: string;
 
     constructor(private readonly configService: ConfigService){
         this.openai = new OpenAI({
-            apiKey: this.configService.get<string>('OPENAI_API_KEY')!,
-            baseURL: this.configService.get<string>('OPENAI_BASE_URL')!,
+            apiKey: this.configService.getOrThrow<string>('OPENAI_API_KEY'),
+            baseURL: this.configService.getOrThrow<string>('OPENAI_BASE_URL'),
         });
+        this.model =
+            this.configService.get<string>('OPENAI_MODEL') ?? 'gpt-5-mini';
     }
 
     async getAnalysis(personaPrompt: string, symbol: string, changePercent: number,currentPrice: number, customPrompt?: string):Promise<string> {
@@ -21,7 +24,7 @@ export class AiService {
                 : `종목: ${symbol}, 가격: ${currentPrice}, 변동률: ${changePercent}%`;
             
             const response = await this.openai.chat.completions.create({
-                model: 'gpt-5-mini',
+                model: this.model,
                 messages: [
                     {role: 'system', content: personaPrompt},
                     {role: 'user', content: userMessageContent}
