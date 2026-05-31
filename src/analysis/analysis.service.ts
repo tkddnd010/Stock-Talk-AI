@@ -6,6 +6,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { AnalysisReport } from './entities/analysis-report.entity';
 import { Repository } from 'typeorm';
 import { NotificationService } from 'src/notification/notification.service';
+import { parseDebateScript } from 'src/utils/debate-parser.util';
 
 @Injectable()
 export class AnalysisService {
@@ -103,6 +104,17 @@ export class AnalysisService {
             where: {symbol},
             order: {createdAt: 'DESC'},
         });
+    }
+
+    async getLatestDebateHistory(symbol: string) {
+        const latestDebate = await this.analysisRepository.findOne({
+            where: {symbol, type: 'DEBATE'},
+            order: {createdAt: 'DESC'},
+        });
+
+        if(!latestDebate) return [];
+
+        return parseDebateScript(latestDebate.content);
     }
 
 }
