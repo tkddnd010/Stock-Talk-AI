@@ -1,5 +1,18 @@
-import { Controller, Get, Param } from '@nestjs/common';
-import { ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
+import {
+    Controller,
+    DefaultValuePipe,
+    Get,
+    Param,
+    ParseIntPipe,
+    Query,
+} from '@nestjs/common';
+import {
+    ApiOperation,
+    ApiParam,
+    ApiQuery,
+    ApiResponse,
+    ApiTags,
+} from '@nestjs/swagger';
 import { AnalysisService } from './analysis.service';
 
 @ApiTags('분석 리포트')
@@ -69,11 +82,33 @@ export class AnalysisController {
         );
     }
 
+    @Get('individual')
+    @ApiOperation({
+        summary: '개별 분석 리포트 전체 조회',
+        description:
+            '저장된 모든 INDIVIDUAL 타입 AI 분석 리포트를 생성일 내림차순으로 페이지 단위 반환합니다.',
+    })
+    @ApiQuery({
+        name: 'page',
+        required: false,
+        description: '페이지 번호 (1부터 시작)',
+        example: 1,
+    })
+    @ApiResponse({
+        status: 200,
+        description: '페이지네이션된 개별 분석 리포트 목록',
+    })
+    async getAllIndividualReports(
+        @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number,
+    ) {
+        return this.analysisService.getAllReports(page);
+    }
+
     @Get(':symbol')
     @ApiOperation({
-        summary: '종목별 분석 리포트 목록 조회',
+        summary: '종목별 개별 분석 리포트 목록 조회',
         description:
-            '해당 종목에 대해 저장된 모든 AI 분석 리포트(개별 성향 분석 INDIVIDUAL, 종합 토론 DEBATE)를 생성일 내림차순으로 반환합니다.',
+            '해당 종목의 INDIVIDUAL 타입 AI 분석 리포트를 생성일 내림차순으로 페이지 단위 반환합니다.',
     })
     @ApiParam({
         name: 'symbol',
@@ -81,78 +116,23 @@ export class AnalysisController {
             '조회할 주식 티커 심볼(예: AAPL, TSLA). 대소문자 구분 없이 처리되며 서버에서 대문자로 정규화됩니다.',
         example: 'TSLA',
     })
+    @ApiQuery({
+        name: 'page',
+        required: false,
+        description: '페이지 번호 (1부터 시작)',
+        example: 1,
+    })
     @ApiResponse({
         status: 200,
-        description:
-            '분석 리포트 엔티티 배열. 리포트가 없으면 빈 배열을 반환합니다.',
-        schema: {
-            type: 'array',
-            items: {
-                type: 'object',
-                properties: {
-                    id: {
-                        type: 'number',
-                        description: '리포트 고유 ID',
-                        example: 1,
-                    },
-                    symbol: {
-                        type: 'string',
-                        description: '분석 대상 종목 티커',
-                        example: 'TSLA',
-                    },
-                    price: {
-                        type: 'number',
-                        description: '분석 당시 주가',
-                        example: 245.5,
-                    },
-                    changePercent: {
-                        type: 'number',
-                        description: '분석 당시 주가 변동률(%)',
-                        example: 2.35,
-                    },
-                    title: {
-                        type: 'string',
-                        description: '리포트 제목',
-                        example: '[가치투자자 관점] TSLA 2.35% 변동 정밀 분석',
-                    },
-                    content: {
-                        type: 'string',
-                        description:
-                            'AI가 생성한 리포트 본문(개별 분석 또는 토론 전문)',
-                    },
-                    author: {
-                        type: 'string',
-                        description:
-                            '작성 주체(예: VALUE_BOT, DEBATE_MODERATOR_BOT)',
-                        example: 'VALUE_BOT',
-                    },
-                    type: {
-                        type: 'string',
-                        enum: ['INDIVIDUAL', 'DEBATE'],
-                        description:
-                            'INDIVIDUAL: 성향별 개별 분석, DEBATE: 종합 토론',
-                    },
-                    createdAt: {
-                        type: 'string',
-                        format: 'date-time',
-                        description: '리포트 생성 시각(ISO 8601)',
-                    },
-                },
-                required: [
-                    'id',
-                    'symbol',
-                    'price',
-                    'changePercent',
-                    'title',
-                    'content',
-                    'author',
-                    'type',
-                    'createdAt',
-                ],
-            },
-        },
+        description: '페이지네이션된 개별 분석 리포트 목록',
     })
-    async getReports(@Param('symbol') symbol: string) {
-        return this.analysisService.getReportsBySymbol(symbol.toUpperCase());
+    async getReports(
+        @Param('symbol') symbol: string,
+        @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number,
+    ) {
+        return this.analysisService.getReportsBySymbol(
+            symbol.toUpperCase(),
+            page,
+        );
     }
 }

@@ -143,11 +143,40 @@ export class AnalysisService {
         }
     }
 
-    async getReportsBySymbol(symbol: string) {
-        return this.analysisRepository.find({
-            where: { symbol },
+    private async getPaginatedIndividualReports(
+        where: { type: 'INDIVIDUAL'; symbol?: string },
+        page: number,
+        limit: number,
+    ) {
+        const [data, total] = await this.analysisRepository.findAndCount({
+            where,
             order: { createdAt: 'DESC' },
+            skip: (page - 1) * limit,
+            take: limit,
         });
+
+        return {
+            data,
+            total,
+            page,
+            totalPages: Math.ceil(total / limit) || 1,
+        };
+    }
+
+    async getAllReports(page = 1, limit = 10) {
+        return this.getPaginatedIndividualReports(
+            { type: 'INDIVIDUAL' },
+            page,
+            limit,
+        );
+    }
+
+    async getReportsBySymbol(symbol: string, page = 1, limit = 10) {
+        return this.getPaginatedIndividualReports(
+            { symbol, type: 'INDIVIDUAL' },
+            page,
+            limit,
+        );
     }
 
     async getLatestDebateHistory(symbol: string) {
