@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
-import axios from 'axios';
+import { apiClient } from '../api/client';
+import { PostDetailModal } from './PostDetailModal';
 
 interface Post {
   id: number;
@@ -30,6 +31,7 @@ export const PostList = ({ symbols }: PostListProps) => {
   const [posts, setPosts] = useState<Post[]>([]);
   const [totalPages, setTotalPages] = useState(1);
   const [loading, setLoading] = useState(true);
+  const [selectedPost, setSelectedPost] = useState<Post | null>(null);
 
   useEffect(() => {
     setPage(1);
@@ -41,9 +43,9 @@ export const PostList = ({ symbols }: PostListProps) => {
       try {
         const baseUrl =
           selectedSymbol === 'ALL'
-            ? 'http://localhost:3000/api/reports/individual'
-            : `http://localhost:3000/api/reports/${selectedSymbol}`;
-        const response = await axios.get<PaginatedPosts>(baseUrl, {
+            ? '/api/reports/individual'
+            : `/api/reports/${selectedSymbol}`;
+        const response = await apiClient.get<PaginatedPosts>(baseUrl, {
           params: { page },
         });
         setPosts(response.data.data);
@@ -102,7 +104,11 @@ export const PostList = ({ symbols }: PostListProps) => {
         <>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {posts.map((post) => (
-              <div key={post.id} className="bg-gray-800 border border-gray-700 p-6 rounded-2xl shadow-lg hover:shadow-xl hover:border-blue-500 transition-all cursor-pointer group">
+              <div
+                key={post.id}
+                onClick={() => setSelectedPost(post)}
+                className="bg-gray-800 border border-gray-700 p-6 rounded-2xl shadow-lg hover:shadow-xl hover:border-blue-500 transition-all cursor-pointer group"
+              >
                 <div className="flex justify-between items-start mb-4">
                   <span className="px-3 py-1 text-xs font-bold rounded-full bg-blue-500/20 text-blue-400">
                     {post.symbol} · 개별 분석
@@ -149,6 +155,10 @@ export const PostList = ({ symbols }: PostListProps) => {
             </div>
           )}
         </>
+      )}
+
+      {selectedPost && (
+        <PostDetailModal post={selectedPost} onClose={() => setSelectedPost(null)} />
       )}
     </div>
   );

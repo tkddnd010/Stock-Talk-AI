@@ -1,7 +1,11 @@
 import { useState } from 'react';
-import axios from 'axios';
+import { apiClient } from '../api/client';
 
-export const Auth = ({ onLogin }: { onLogin: () => void }) => {
+interface UserInfo {
+  nickname: string;
+}
+
+export const Auth = ({ onLogin }: { onLogin: (user: UserInfo) => void }) => {
   const [isLogin, setIsLogin] = useState(true);
   
   // 💡 1. 입력값을 담을 State 추가
@@ -16,19 +20,18 @@ export const Auth = ({ onLogin }: { onLogin: () => void }) => {
     try {
       if (isLogin) {
         // [로그인] API 호출 (주소는 백엔드 라우터 설정에 맞게 수정 필요)
-        const response = await axios.post('http://localhost:3000/api/auth/login', {
+        const response = await apiClient.post('/api/auth/login', {
           email,
           password,
         });
-        
-        // 백엔드에서 준 토큰을 로컬 스토리지에 저장
-        const token = response.data.access_token; // 백엔드 응답 키값에 따라 다를 수 있음
-        localStorage.setItem('accessToken', token);
-        
-        onLogin(); // 앱 메인 화면으로 전환
+
+        localStorage.setItem('accessToken', response.data.access_token);
+
+        const profileRes = await apiClient.get('/api/users/personalInfo');
+        onLogin({ nickname: profileRes.data.nickname });
       } else {
         // [회원가입] API 호출
-        await axios.post('http://localhost:3000/api/auth/signup', { // 엔드포인트 확인 필요
+        await apiClient.post('/api/auth/signup', {
           email,
           password,
           nickname,

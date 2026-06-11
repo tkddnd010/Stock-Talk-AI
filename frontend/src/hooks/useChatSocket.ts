@@ -1,6 +1,6 @@
 import { useEffect, useState, useRef } from 'react';
 import { io, Socket } from 'socket.io-client';
-import axios from 'axios';
+import { apiClient } from '../api/client';
 
 export interface ChatMessage {
   speaker: string;
@@ -18,7 +18,7 @@ export const useChatSocket = (symbol: string) => {
 
     const fetchHistory = async () => {
       try {
-        const response = await axios.get(`http://localhost:3000/api/reports/history/${symbol}`);
+        const response = await apiClient.get(`/api/reports/history/${symbol}`);
         setMessages(response.data);
       } catch (error) {
         console.error('과거 대화 기록을 불러오는데 실패했습니다.', error);
@@ -27,7 +27,10 @@ export const useChatSocket = (symbol: string) => {
     fetchHistory();
 
     if (!socketRef.current) {
-      socketRef.current = io('http://localhost:3000');
+      const token = localStorage.getItem('accessToken');
+      socketRef.current = io('http://localhost:3000', {
+        auth: { token: token ?? '' },
+      });
     }
 
     socketRef.current.emit('joinRoom', symbol);

@@ -5,6 +5,7 @@ import {
     Param,
     ParseIntPipe,
     Query,
+    UseGuards,
 } from '@nestjs/common';
 import {
     ApiOperation,
@@ -14,9 +15,11 @@ import {
     ApiTags,
 } from '@nestjs/swagger';
 import { AnalysisService } from './analysis.service';
+import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 
 @ApiTags('분석 리포트')
 @Controller('api/reports')
+@UseGuards(JwtAuthGuard)
 export class AnalysisController {
     constructor(private readonly analysisService: AnalysisService) {}
 

@@ -1,17 +1,38 @@
+import { UseGuards } from '@nestjs/common';
 import {
     ConnectedSocket,
     MessageBody,
+    OnGatewayConnection,
     SubscribeMessage,
     WebSocketGateway,
     WebSocketServer,
 } from '@nestjs/websockets';
-import { timestamp } from 'rxjs';
+import { ConfigService } from '@nestjs/config';
+import { JwtService } from '@nestjs/jwt';
 import { Server, Socket } from 'socket.io';
+import {
+    verifySocketClient,
+    WsJwtGuard,
+} from '../auth/guards/ws-jwt.guard';
 
 @WebSocketGateway({ cors: true })
-export class NotificationGateway {
+@UseGuards(WsJwtGuard)
+export class NotificationGateway implements OnGatewayConnection {
     @WebSocketServer()
     server: Server;
+
+    constructor(
+        private readonly jwtService: JwtService,
+        private readonly configService: ConfigService,
+    ) {}
+
+    handleConnection(client: Socket) {
+        if (
+            !verifySocketClient(client, this.jwtService, this.configService)
+        ) {
+            client.disconnect(true);
+        }
+    }
 
     @SubscribeMessage('joinRoom')
     handleJoinRoom(
